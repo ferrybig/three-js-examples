@@ -1,0 +1,15 @@
+{
+	"name": "three-js-examples",
+	"version": "1.0.0",
+	"keywords": [
+		"util",
+		"functional",
+		"server",
+		"client",
+		"browser"
+	],
+	"author": "Fernando van Loenhout",
+	"contributors": [
+	],
+	"dependencies": {}
+}
