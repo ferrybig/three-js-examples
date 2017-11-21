@@ -146,4 +146,4 @@ class Gameloop {
 	}
 }
 
-//export default Gameloop;
+export default Gameloop;

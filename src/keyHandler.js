@@ -27,3 +27,4 @@ const keyHandler = {
 		}
 	}
 };
+export default keyHandler;

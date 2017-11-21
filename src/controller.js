@@ -7,7 +7,7 @@ function between(input, min, max) {
 	return input;
 }
 
-function inputBindingVoid() {
+export function inputBindingVoid() {
 	return {
 		tick() {},
 		getValue() {
@@ -17,7 +17,7 @@ function inputBindingVoid() {
 	};
 }
 
-function inputBindingKey(keyHandler, keyUp, keyDown) {
+export function inputBindingKey(keyHandler, keyUp, keyDown) {
 	let keyUpPressed = false;
 	let keyDownPressed = false;
 	return {
@@ -39,7 +39,7 @@ function inputBindingKey(keyHandler, keyUp, keyDown) {
 	};
 }
 
-function inputBindingKeyAction(keyHandler, keyUp, keyDown) {
+export function inputBindingKeyAction(keyHandler, keyUp, keyDown) {
 	let keyUpPressed = false;
 	let keyDownPressed = false;
 	let wasKeyUpPressed = false;
@@ -65,11 +65,11 @@ function inputBindingKeyAction(keyHandler, keyUp, keyDown) {
 	};
 }
 
-function inputBindingMouseMove(mouseHandler, direction, moveVirtualPoint, range, pressOnly) {}
+export function inputBindingMouseMove(mouseHandler, direction, moveVirtualPoint, range, pressOnly) {}
 
-function inputBindingMouseToPoint(mouseHandler, direction, point, range, pressOnly) {}
+export function inputBindingMouseToPoint(mouseHandler, direction, point, range, pressOnly) {}
 
-function inputBindingCombined(...inputBindings) {
+export function inputBindingCombined(...inputBindings) {
 	if (inputBindings.length === 0) {
 		throw new Error('Invalid input binding group');
 	}
@@ -104,7 +104,7 @@ function inputBindingCombined(...inputBindings) {
 		}
 	};
 }
-function inputBindingSummed(...inputBindings) {
+export function inputBindingSummed(...inputBindings) {
 	if (inputBindings.length === 0) {
 		throw new Error('Invalid input binding group');
 	}
@@ -132,7 +132,7 @@ function inputBindingSummed(...inputBindings) {
 	};
 }
 
-function inputBindingSmooth(inputBinding, smoothness, minChange = 0) {
+export function inputBindingSmooth(inputBinding, smoothness, minChange = 0) {
 	let lastValue = 0;
 	return {
 		tick() {
@@ -152,7 +152,7 @@ function inputBindingSmooth(inputBinding, smoothness, minChange = 0) {
 	};
 }
 
-function inputBindingDeadzone(inputBinding, smoothness, minChange = 0) {
+export function inputBindingDeadzone(inputBinding, smoothness, minChange = 0) {
 	let lastValue = 0;
 	return {
 		tick() {
@@ -172,7 +172,7 @@ function inputBindingDeadzone(inputBinding, smoothness, minChange = 0) {
 	};
 }
 
-function dualAxisControllerNormalized(inputBindingX, inputBindingY) {
+export function dualAxisControllerNormalized(inputBindingX, inputBindingY) {
 	return {
 		tick() {
 			inputBindingX.tick();
@@ -197,7 +197,7 @@ function dualAxisControllerNormalized(inputBindingX, inputBindingY) {
 		}
 	};
 }
-function dualAxisController(inputBindingX, inputBindingY) {
+export function dualAxisController(inputBindingX, inputBindingY) {
 	return {
 		tick() {
 			inputBindingX.tick();
@@ -215,7 +215,7 @@ function dualAxisController(inputBindingX, inputBindingY) {
 		}
 	};
 }
-function trippleAxisControllerNormalized(inputBindingX, inputBindingY, inputBindingZ) {
+export function trippleAxisControllerNormalized(inputBindingX, inputBindingY, inputBindingZ) {
 	return {
 		tick() {
 			inputBindingX.tick();
@@ -244,7 +244,7 @@ function trippleAxisControllerNormalized(inputBindingX, inputBindingY, inputBind
 		}
 	};
 }
-function trippleAxisController(inputBindingX, inputBindingY, inputBindingZ) {
+export function trippleAxisController(inputBindingX, inputBindingY, inputBindingZ) {
 	return {
 		tick() {
 			inputBindingX.tick();
