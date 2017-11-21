@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8>
+		<title>My first three.js app</title>
+		<style>
+			body { margin: 0; font-size: 0;}
+			canvas { width: 100%; height: 100%; }
+		</style>
+	</head>
+	<body>
+		<script src="three.js"></script>
+		<script src="controller.js"></script>
+		<script src="gameloop.js"></script>
+		<script src="keyHandler.js"></script>
+		<script>
+			'use strict';
+
+
+
+			var controls = {
+				cameraLeftRight: inputBindingKeyAction(keyHandler, 37, 39), // < >
+				rotateBlockX: inputBindingKeyAction(keyHandler, 81, 65), // q a
+				rotateBlockY: inputBindingKeyAction(keyHandler, 87, 83), // w s
+				rotateBlockZ: inputBindingKeyAction(keyHandler, 69, 68), // e d
+				flipBlockX: inputBindingKeyAction(keyHandler, -1, 90), // z
+				flipBlockY: inputBindingKeyAction(keyHandler, -1, 88), // x
+				flipBlockZ: inputBindingKeyAction(keyHandler, -1, 67), // c
+				moveBlockX: inputBindingKeyAction(keyHandler, 69, 68), // e d
+				moveBlockZ: inputBindingKeyAction(keyHandler, 69, 68), // e d
+			};
+
+
+			const TetrisState = {
+				empty: Symbol(),
+				block: Symbol(),
+				moving: Symbol(),
+			};
+
+
+			class ThreeDemo {
+				constructor() {
+				}
+
+				start() {
+					this.tick = 0;
+					this.initVariables();
+					this.initScene();
+					this.initCamara();
+					this.initDOM();
+					this.populateScene();
+					this.gameLoop.addTask('update', () => this.update());
+					this.gameLoop.addDrawTask('animate', () => this.animate());
+					this.gameLoop.start();
+				}
+
+				initScene() {
+					this.scene = new THREE.Scene();
+					this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+					this.renderer = new THREE.WebGLRenderer();
+					this.renderer.setSize(window.innerWidth, window.innerHeight);
+					this.renderer.shadowMap.enabled = true;
+					this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+					this.renderer.gammaInput = true;
+					this.renderer.gammaOutput = true;
+					window.addEventListener('resize', function () {
+
+						this.camera.aspect = window.innerWidth / window.innerHeight;
+						this.camera.updateProjectionMatrix();
+
+						this.renderer.setSize(window.innerWidth, window.innerHeight);
+
+					}, false);
+				}
+
+				initDOM() {
+					document.body.appendChild(this.renderer.domElement);
+				}
+				initVariables() {
+					this.gameLoop = new Gameloop();
+					this.gameLoop.setTargetPhysicsRate(1000 / 60);
+					this.blocks = [];
+					this.field = [];
+					this.camaraRotation = 0.3;
+					this.colors = [0xff00ff, 0xffffff, 0xffff00, 0x00ffff, 0xffaaff, 0xffffaa, 0xaaffff];
+					for (let x = 0; x < 4; x++) {
+						for (let z = 0; z < 4; z++) {
+							for (let y = 0; y < 11; y++) {
+								this.field.push({
+									block: undefined,
+									state: TetrisState.empty,
+									color: 0,
+									x,
+									y,
+									z
+								});
+							}
+						}
+					}
+					this.nextBlockCubes = [];
+					this.nextBlock = [];
+					for (let x = 0; x < 4; x++) {
+						for (let z = 0; z < 4; z++) {
+							for (let y = 0; y < 4; y++) {
+								this.nextBlock.push({
+									block: undefined,
+									state: TetrisState.empty,
+									color: 0,
+									x,
+									y,
+									z
+								});
+							}
+						}
+					}
+//					'red',
+//	'blue',
+//	'purple',
+//	'violet',
+//	'orange',
+//	'green',
+//	'pink',
+
+//	if (type === 'T') {
+//		return matrix = [
+//			[0, 0, 0],
+//			[1, 1, 1],
+//			[0, 1, 0],
+//		];
+//	} else if (type === 'O'){
+//		return matrix = [
+//			[2, 2],
+//			[2, 2],
+//		];
+//	}
+//	if (type === 'L') {
+//		return matrix = [
+//			[0, 3, 0],
+//			[0, 3, 0],
+//			[0, 3, 3],
+//		];
+//	}
+//	if (type === 'J') {
+//		return matrix = [
+//			[0, 4, 0],
+//			[0, 4, 0],
+//			[4, 4, 0],
+//		];
+//	}
+//	if (type === 'I') {
+//		return matrix = [
+//			[0, 5, 0, 0],
+//			[0, 5, 0, 0],
+//			[0, 5, 0, 0],
+//			[0, 5, 0, 0],
+//		];
+//	}
+//	if (type === 'S') {
+//		return matrix = [
+//			[0, 6, 6],
+//			[6, 6, 0],
+//			[0, 0, 0],
+//		];
+//	}
+//	if (type === 'Z') {
+//		return matrix = [
+//			[7, 7, 0],
+//			[0, 7, 7],
+//			[0, 0, 0],
+//		];
+//	}
+					this.shapes = [
+						{
+							color: 0x00ffff,
+							shape: [
+								[
+									[1, 1, 1, 1]
+								]
+							]
+						}, {
+							color: 0xf442dc,
+							shape:
+									[
+										[
+											[1, 0, 0],
+											[1, 1, 1]
+										]
+									]
+						}, {
+							color: 0xff0000,
+							shape:
+									[
+										[
+											[0, 1, 0],
+											[1, 1, 1]
+										]
+									]
+						}, {
+							color: 0xe5098d,
+							shape:
+									[
+										[
+											[0, 0, 1],
+											[1, 1, 1]
+										]
+									]
+						}, {
+							color: 0x0bc40e,
+							shape:
+									[
+										[
+											[0, 1, 1],
+											[1, 1, 0]
+										]
+									]
+						}, {
+							color: 0xff2da4,
+							shape:
+									[
+										[
+											[1, 1, 0],
+											[0, 1, 1]
+										]
+									]
+//						}, {
+//							color: 0x0000ff,
+//							shape:
+//									[
+//										[
+//											[1, 1],
+//											[1, 1]
+//										]
+//									]
+//						}, {
+//							color: 0xa0a0ff,
+//							shape:
+//									[
+//										[
+//											[1, 1],
+//											[1, 1]
+//										],
+//										[
+//											[1, 1],
+//											[1, 1]
+//										]
+//									]
+						}
+					];
+					this.generateNextFallingBlock();
+					this.newFallingBlock();
+				}
+
+				generateNextFallingBlock() {
+					this.nextFallingBlock = this.shapes[Math.floor(Math.random() * this.shapes.length)];
+				}
+
+				newFallingBlock() {
+					this.fallingBlock = {
+						color: this.nextFallingBlock.color,
+						shape: this.nextFallingBlock.shape,
+						y: 10,
+						x: 0,
+						z: 0,
+						holdTimer: 3,
+					};
+					var rotX = Math.random() * 3;
+					var rotY = Math.random() * 3;
+					var rotZ = Math.random() * 3;
+					for (let i = 0; i < rotX; i++) {
+						this.rotateShape('x');
+					}
+					for (let i = 0; i < rotY; i++) {
+						this.rotateShape('y');
+					}
+					for (let i = 0; i < rotZ; i++) {
+						this.rotateShape('z');
+					}
+
+					this.calculateFallingBlockDimensions();
+					this.generateNextFallingBlock();
+					console.log(this.fallingBlock.dimensions);
+				}
+
+				rotateShape(axis) {
+					const maxSize = Math.max(this.fallingBlock.shape.length, this.fallingBlock.shape[0].length, this.fallingBlock.shape[0][0].length);
+					let transform;
+					if (axis === 'x') {
+						transform = [
+							[1, 0, 0],
+							[0, 0, 1],
+							[0, 1, 0]
+						];
+					}
+					if (axis === 'y') {
+						transform = [
+							[0, 0, 1],
+							[0, 1, 0],
+							[1, 0, 0]
+						];
+					}
+					if (axis === 'z') {
+						transform = [
+							[0, 1, 0],
+							[1, 0, 0],
+							[0, 0, 1]
+						];
+					}
+					const shape = [];
+					for (let x = 0; x < maxSize; x++) {
+						var xArray = [];
+						shape.push(xArray);
+						for (let y = 0; y < maxSize; y++) {
+							var yArray = [];
+							xArray.push(yArray);
+							for (let z = 0; z < maxSize; z++) {
+								let xOrginal = transform[0][0] * x + transform[0][1] * y + transform[0][2] * z;
+								let yOrginal = transform[1][0] * x + transform[1][1] * y + transform[1][2] * z;
+								let zOrginal = transform[2][0] * x + transform[2][1] * y + transform[2][2] * z;
+								if (this.fallingBlock.shape.length > xOrginal
+										&& this.fallingBlock.shape[xOrginal].length > yOrginal
+										&& this.fallingBlock.shape[xOrginal][yOrginal].length > zOrginal) {
+									yArray.push(this.fallingBlock.shape[xOrginal][yOrginal][zOrginal]);
+								} else {
+									yArray.push(0);
+								}
+							}
+						}
+					}
+					if (axis === 'y') {
+						shape.reverse();
+					}
+					if (axis === 'z') {
+						shape.forEach(e => {
+							e.reverse();
+						});
+					}
+					if (axis === 'x') {
+						shape.forEach(e => {
+							e.forEach(r => r.reverse());
+						});
+					}
+					let lowestX = Infinity;
+					let lowestY = Infinity;
+					let lowestZ = Infinity;
+					for (let x = 0; x < maxSize; x++) {
+						for (let y = 0; y < maxSize; y++) {
+							for (let z = 0; z < maxSize; z++) {
+								if (shape[x][y][z]) {
+									if (x < lowestX) {
+										lowestX = x;
+									}
+									if (y < lowestY) {
+										lowestY = y;
+									}
+									if (z < lowestZ) {
+										lowestZ = z;
+									}
+								}
+							}
+						}
+					}
+					if (lowestX !== 0 || lowestY !== 0 || lowestZ !== 0) {
+						for (let x = lowestX; x < maxSize; x++) {
+							for (let y = lowestY; y < maxSize; y++) {
+								for (let z = lowestZ; z < maxSize; z++) {
+									shape[x - lowestX][y - lowestY][z - lowestZ] = shape[x][y][z];
+									shape[x][y][z] = 0;
+								}
+							}
+						}
+					}
+					this.fallingBlock.shape = shape;
+				}
+
+				tryRotate(axis, times) {
+					const originalShape = this.fallingBlock.shape;
+					const originalX = this.fallingBlock.x;
+					const originalY = this.fallingBlock.y;
+					const originalZ = this.fallingBlock.z;
+					const originalDimensions = this.fallingBlock.dimensions;
+					const originalTiles = this.fallingBlock.tiles;
+					if (times < 0) {
+						times += 4;
+					}
+					for (let i = 0; i < times; i++) {
+						this.rotateShape(axis);
+					}
+					this.calculateFallingBlockDimensions();
+					this.calculateFallingBlockSubTiles();
+
+
+					const newDimensions = this.fallingBlock.dimensions;
+
+					// Recheck block validity
+					const xDiff = newDimensions.x - originalDimensions.x;
+					const yDiff = newDimensions.y - originalDimensions.y;
+					const zDiff = newDimensions.z - originalDimensions.z;
+
+					const xMin = Math.min(xDiff, 0);
+					const yMin = Math.min(yDiff, 0);
+					const zMin = Math.min(zDiff, 0);
+
+					const xMax = Math.max(xDiff, 1);
+					const yMax = Math.max(yDiff, 1);
+					const zMax = Math.max(zDiff, 1);
+
+					const permutations = [];
+					console.log(xMin, yMin, zMin, xMax, yMax, zMax);
+					for (let x = xMin; x < xMax; x++) {
+						for (let y = yMin; y < yMax; y++) {
+							for (let z = zMin; z < zMax; z++) {
+								permutations.push({x, y, z});
+							}
+						}
+					}
+					const orginalCenterOfMass = {
+						originalTiles
+					};
+					permutations.sort((a, b) => {
+						var aLength = Math.abs(a.x) + Math.abs(a.y) + Math.abs(a.z);
+						var bLength = Math.abs(b.x) + Math.abs(b.y) + Math.abs(b.z);
+						if (aLength > bLength) {
+							return 1;
+						} else if (aLength < bLength) {
+							return -1;
+						}
+						return 0;
+					});
+					for (let i = 0; i < permutations.length; i++) {
+						this.fallingBlock.x = originalX + permutations[i].x;
+						this.fallingBlock.y = originalY + permutations[i].y;
+						this.fallingBlock.z = originalZ + permutations[i].z;
+						if (this.fallingBlock.x + this.fallingBlock.dimensions.x > 3) {// todo magic constant field max x
+							continue;
+						}
+						if (this.fallingBlock.z + this.fallingBlock.dimensions.z > 3) {// todo magic constant field max z
+							continue;
+						}
+						while (this.fallingBlock.y + this.fallingBlock.dimensions.y > 11) {// todo magic constant field max y
+							this.fallingBlock.y--;
+						}
+						this.calculateFallingBlockSubTiles();
+						const {toClean, toMark, toKillBlock} = this.checkFallingBlockCollissions();
+						if (toKillBlock) {
+							continue;
+						}
+
+						for (let i = 0; i < toClean.length; i++) {
+							toClean[i].state = TetrisState.empty;
+						}
+						for (let i = 0; i < toMark.length; i++) {
+							toMark[i].state = TetrisState.moving;
+							toMark[i].color = this.fallingBlock.color;
+						}
+						return;
+					}
+					this.fallingBlock.shape = originalShape;
+					this.fallingBlock.x = originalX;
+					this.fallingBlock.y = originalY;
+					this.fallingBlock.z = originalZ;
+					this.fallingBlock.dimensions = originalDimensions;
+					this.fallingBlock.tiles = originalTiles;
+				}
+
+				populateScene() {
+					const light = new THREE.AmbientLight(0xaaaaaa, 20); // soft white light
+					this.scene.add(light);
+					var directionalLight = new THREE.DirectionalLight(0xffffff, 0.5, 200);
+					this.scene.add(directionalLight);
+
+					var material = new THREE.LineBasicMaterial({color: 0xeeeeee});
+
+					for (let x = 1; x < 4; x++)
+					{
+						var geometry = new THREE.Geometry();
+						geometry.vertices.push(new THREE.Vector3(x - 2, 0, 0 - 2));
+						geometry.vertices.push(new THREE.Vector3(x - 2, 11, 0 - 2));
+						geometry.vertices.push(new THREE.Vector3(x - 2, 11, 0 + 2));
+						geometry.vertices.push(new THREE.Vector3(x - 2, 0, 0 + 2));
+						geometry.vertices.push(new THREE.Vector3(x - 2, 0, 0 - 2));
+						var line = new THREE.Line(geometry, material);
+						this.scene.add(line);
+					}
+					for (let z = 1; z < 4; z++) {
+						var geometry = new THREE.Geometry();
+						geometry.vertices.push(new THREE.Vector3(0 - 2, 0, z - 2));
+						geometry.vertices.push(new THREE.Vector3(0 - 2, 11, z - 2));
+						geometry.vertices.push(new THREE.Vector3(0 + 2, 11, z - 2));
+						geometry.vertices.push(new THREE.Vector3(0 + 2, 0, z - 2));
+						geometry.vertices.push(new THREE.Vector3(0 - 2, 0, z - 2));
+						var line = new THREE.Line(geometry, material);
+						this.scene.add(line);
+					}
+					for (let y = 1; y < 11; y++) {
+						var geometry = new THREE.Geometry();
+						geometry.vertices.push(new THREE.Vector3(0 - 2, y, 0 - 2));
+						geometry.vertices.push(new THREE.Vector3(0 + 2, y, 0 - 2));
+						geometry.vertices.push(new THREE.Vector3(0 + 2, y, 0 + 2));
+						geometry.vertices.push(new THREE.Vector3(0 - 2, y, 0 + 2));
+						geometry.vertices.push(new THREE.Vector3(0 - 2, y, 0 - 2));
+						var line = new THREE.Line(geometry, material);
+						this.scene.add(line);
+					}
+
+				}
+
+				makeBlock() {
+					if (!this.texture) {
+						this.texture = new THREE.TextureLoader().load('crate.gif');
+					}
+					const material = new THREE.MeshPhongMaterial({shininess: 30, map: this.texture, transparent: true, opacity: 0.75});
+
+					var geometry = new THREE.BoxBufferGeometry(1, 1, 1);
+					var cube = new THREE.Mesh(geometry, material);
+					this.scene.add(cube);
+					cube.castShadow = true;
+					cube.receiveShadow = true;
+					return cube;
+				}
+
+				getRandomColor() {
+					var letters = '5cf';
+					var color = '';
+					for (var i = 0; i < 6; i++) {
+						color += letters[Math.floor(Math.random() * letters.length)];
+					}
+					return parseInt(color, 16);
+				}
+
+				initCamara() {
+					this.updateCamara(0);
+				}
+
+				calculateFallingBlockDimensions() {
+					const maxSize = Math.max(this.fallingBlock.shape.length, this.fallingBlock.shape[0].length, this.fallingBlock.shape[0][0].length);
+
+					const dimensions = [0, 0, 0];
+					for (let x = 0; x < this.fallingBlock.shape.length; x++) {
+						for (let y = 0; y < this.fallingBlock.shape[x].length; y++) {
+							for (let z = 0; z < this.fallingBlock.shape[x][y].length; z++) {
+								if (this.fallingBlock.shape[x][y][z]) {
+									dimensions[0] = Math.max(dimensions[0], x + 1);
+									dimensions[1] = Math.max(dimensions[1], y + 1);
+									dimensions[2] = Math.max(dimensions[2], z + 1);
+								}
+							}
+						}
+					}
+					this.fallingBlock.dimensions = {
+						x: dimensions[0],
+						y: dimensions[1],
+						z: dimensions[2],
+					};
+				}
+
+				calculateFallingBlockSubTiles() {
+					let tiles = [];
+					for (let x = 0; x < this.fallingBlock.shape.length; x++) {
+						for (let y = 0; y < this.fallingBlock.shape[x].length; y++) {
+							for (let z = 0; z < this.fallingBlock.shape[x][y].length; z++) {
+								if (this.fallingBlock.shape[x][y][z]) {
+									tiles.push({
+										x: x + this.fallingBlock.x,
+										y: y + this.fallingBlock.y,
+										z: z + this.fallingBlock.z,
+									});
+								}
+							}
+						}
+					}
+					this.fallingBlock.tiles = tiles;
+				}
+
+				checkBoardState() {
+					const totals = [];
+					for (let y = 0; y < 11; y++) { // todo magic constant board heigth
+						totals.push(0);
+					}
+					for (let i = 0; i < this.field.length; i++) {
+						if (this.field[i].state === TetrisState.block) {
+							totals[this.field[i].y]++;
+						}
+					}
+					let replaced = 0;
+					for (let y = 0; y < 11; y++) { // todo magic constant board heigth
+						if (totals[y] === 16) { // todo  magic constant width * heigth
+							let replacedY = y - replaced;
+							let rowSet = [];
+
+							for (let x = 0; x < 4; x++) { // todo magic constant board x
+								const arr = [];
+								rowSet.push(arr);
+								for (let x = 0; x < 4; x++) { // todo magic constant board x
+									arr.push(0);
+								}
+							}
+							for (let i = 0; i < this.field.length; i++) {
+
+								if (this.field[i].y < replacedY) {
+									continue;
+								}
+								if (this.field[i].y > replacedY) {
+									rowSet[this.field[i].x][this.field[i].z].color = this.field[i].color;
+									rowSet[this.field[i].x][this.field[i].z].state = this.field[i].state;
+								}
+								this.field[i].state = TetrisState.empty;
+								this.field[i].updated = true;
+								rowSet[this.field[i].x][this.field[i].z] = this.field[i];
+							}
+							replaced++;
+						}
+					}
+				}
+
+				checkFallingBlockCollissions() {
+					const toClean = [];
+					const toMark = [];
+					let toKillBlock = false;
+					for (let i = 0; i < this.field.length; i++) {
+						for (let j = 0; j < this.fallingBlock.tiles.length; j++) {
+							if (this.fallingBlock.tiles[j].x === this.field[i].x && this.fallingBlock.tiles[j].y === this.field[i].y && this.fallingBlock.tiles[j].z === this.field[i].z) {
+								if (this.field[i].state === TetrisState.block) {
+									toKillBlock = true;
+								}
+								toMark.push(this.field[i]);
+							}
+						}
+						if (this.field[i].state === TetrisState.moving) {
+							toClean.push(this.field[i]);
+						}
+					}
+					return {toClean, toMark, toKillBlock}
+				}
+
+				updateFallingBlockFieldsTiles() {
+					let relocating = false;
+					if (this.fallingBlock.holdTimer === 0) {
+						this.fallingBlock.y--;
+					} else {
+						this.fallingBlock.holdTimer--;
+					}
+					while (this.fallingBlock.y + this.fallingBlock.dimensions.y > 11) { // todo magic constant field max y
+						this.fallingBlock.y--;
+					}
+					do {
+						if (relocating) {
+							if (this.fallingBlock.x + this.fallingBlock.dimensions.x > 3) {// todo magic constant field max x
+								if (this.fallingBlock.z + this.fallingBlock.dimensions.z > 3) {// todo magic constant field max z
+									console.log('gameover');
+									throw new Error('gameover');
+								} else {
+									this.fallingBlock.z++;
+									this.fallingBlock.x = 0;
+								}
+							} else {
+								this.fallingBlock.x++;
+							}
+							relocating = false;
+						}
+						this.calculateFallingBlockSubTiles();
+						const {toClean, toMark, toKillBlock} = this.checkFallingBlockCollissions();
+						if (toKillBlock || this.fallingBlock.y < 0) {
+							if (toClean.length === 0) {
+								// Prevous spawning failed
+								relocating = true;
+								continue;
+							}
+							for (let i = 0; i < toClean.length; i++) {
+								toClean[i].state = TetrisState.block;
+							}
+							this.checkBoardState();
+							this.newFallingBlock();
+						} else {
+							for (let i = 0; i < toClean.length; i++) {
+								toClean[i].state = TetrisState.empty;
+							}
+							for (let i = 0; i < toMark.length; i++) {
+								toMark[i].state = TetrisState.moving;
+								toMark[i].color = this.fallingBlock.color;
+							}
+						}
+					} while (relocating);
+				}
+
+				updateUserInput() {
+					for (let i in controls) {
+						controls[i].tick();
+					}
+					keyHandler.tick();
+					this.camaraRotation += controls.cameraLeftRight.getValue() * Math.PI / 2;
+
+					const rotX = controls.rotateBlockX.getValue() + controls.flipBlockX.getValue() * 2;
+					if (rotX !== 0) {
+						this.tryRotate('x', rotX);
+					}
+					const rotY = controls.rotateBlockY.getValue() + controls.flipBlockY.getValue() * 2;
+					if (rotY !== 0) {
+						this.tryRotate('y', rotY);
+					}
+					const rotZ = controls.rotateBlockZ.getValue() + controls.flipBlockZ.getValue() * 2;
+					if (rotZ !== 0) {
+						this.tryRotate('z', rotZ);
+					}
+				}
+
+				updateCamara(tick) {
+					this.camera.position.set(Math.sin(this.camaraRotation) * 9.5, 9.5, Math.cos(this.camaraRotation) * 9.5);
+					this.camera.lookAt(new THREE.Vector3(0, 5.5, 0));
+				}
+
+				updateCubes(tick) {
+					if (tick % 60 === 0) {
+						this.updateFallingBlockFieldsTiles();
+					}
+					//this.texture.needsUpdate = true;
+				}
+
+				drawCubes() {
+					for (let i = 0; i < this.field.length; i++) {
+						const block = this.field[i];
+						if (block.state !== TetrisState.empty) {
+							if (!block.block) {
+								let mesh;
+								if (this.blocks.length > 0) {
+									mesh = this.blocks.shift();
+								} else {
+									mesh = this.makeBlock();
+								}
+								mesh.position.set(block.x - 1.5, block.y + 0.5, block.z - 1.5);
+								mesh.material.color = new THREE.Color(block.color);
+								block.block = mesh;
+							} else if (this.field[i].updated) {
+								block.block.material.color = new THREE.Color(block.color);
+							}
+						} else {
+							if (block.block) {
+								block.block.position.set(0, -20, 0);
+								this.blocks.push(block.block);
+								block.block = null;
+							}
+						}
+						this.field[i].updated = false;
+					}
+				}
+
+				update() {
+					this.tick++;
+					this.updateCamara(this.tick);
+					this.updateCubes(this.tick);
+					this.drawCubes();
+					this.updateUserInput();
+				}
+
+				animate() {
+					this.renderer.render(this.scene, this.camera);
+				}
+			}
+
+			const demo = new ThreeDemo();
+			demo.start();
+
+
+
+		</script>
+	</body>
+</html>
