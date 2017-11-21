@@ -64,7 +64,7 @@
 					this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 					this.renderer.gammaInput = true;
 					this.renderer.gammaOutput = true;
-					window.addEventListener('resize', function () {
+					window.addEventListener('resize', () => {
 
 						this.camera.aspect = window.innerWidth / window.innerHeight;
 						this.camera.updateProjectionMatrix();
