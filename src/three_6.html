@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8>
+		<title>My first three.js app</title>
+		<style>
+			body { margin: 0; font-size: 0;}
+			canvas { width: 100%; height: 100%; }
+		</style>
+	</head>
+	<body>
+		<script src="three.js"></script>
+		<script>
+			class PsuedoRandom {
+				constructor(seed) {
+					this.m_w = 123456789;
+					this.m_z = 987654321;
+					this.mask = 0xffffffff;
+					if (seed !== undefined) {
+						this.seed(seed);
+					} else {
+						this.seed(Math.round(Math.random() * Number.MAX_SAFE_INTEGER));
+					}
+				}
+
+				seed(i) {
+					this.m_w = i;
+					this.m_z = 987654321;
+				}
+
+				// Returns number between 0 (inclusive) and 1.0 (exclusive),
+				// just like Math.random().
+				random()
+				{
+					this.m_z = (36969 * (this.m_z & 65535) + (this.m_z >> 16)) & this.mask;
+					this.m_w = (18000 * (this.m_w & 65535) + (this.m_w >> 16)) & this.mask;
+					var result = ((this.m_z << 16) + this.m_w) & this.mask;
+					result /= 4294967296;
+					return result + 0.5;
+				}
+			}
+			class Octave {
+				constructor(amplitude, offset, frequency) {
+					this.amplitude = amplitude;
+					this.offset = offset;
+					this.frequency = frequency;
+					console.log(amplitude, offset, frequency);
+				}
+				noise(point) {
+					return Math.sin((point + this.offset) / this.frequency) * this.amplitude;
+				}
+				getAmplitude() {
+					return this.amplitude;
+				}
+
+			}
+			class NoiseGenerator {
+				constructor(seed) {
+					this.octaves = [];
+					const random = new PsuedoRandom(seed);
+					for (let i = 0; i < 2; i++) {
+						const arr = []
+						this.octaves.push(arr);
+						for (let j = 0; j < 3; j++) {
+							arr.push(new Octave(random.random() * 5, random.random() * 5, random.random() * 5));
+						}
+					}
+				}
+				noise(...input) {
+					let output = 0;
+					let totalStrength = 0;
+					for (let i = 0; i < input.length; i++) {
+						for (let j = 0; j < this.octaves[i].length; j++) {
+							output += this.octaves[i][j].noise(input[i]);
+							totalStrength += this.octaves[i][j].getAmplitude();
+						}
+					}
+					return output / totalStrength;
+				}
+			}
+
+			const noiseGenerator = new NoiseGenerator();
+
+			class ThreeComplexObject {
+				constructor() {
+					this.group = new THREE.Group();
+					this.children = [];
+				}
+
+				add(...objects) {
+					for (let i = 0; i < objects.length; i++) {
+						this.add0(objects[i]);
+					}
+					return this;
+				}
+
+				add0(obj) {
+					console.log(obj);
+					if (obj instanceof ThreeComplexObject) {
+						this.children.push(obj);
+						obj = obj.getGroup();
+					}
+					this.group.add(obj);
+					return this;
+				}
+
+				moveTo(x, y, z) {
+					this.group.position.set(x, y, z);
+					return this;
+				}
+				rotateTo(x, y, z) {
+					this.group.rotation.set(x, y, z);
+					return this;
+				}
+
+				getGroup() {
+					return this.group;
+				}
+
+				get position() {
+					return group.position;
+				}
+
+				update(tick) {
+					for (let i = 0; i < this.children.length; i++) {
+						this.children[i].update(tick);
+					}
+				}
+			}
+
+			class SimpleObject extends ThreeComplexObject {
+				constructor(...meshes) {
+					super();
+					this.meshes = meshes;
+					for (let i = 0; i < meshes.length; i++) {
+						this.add(meshes[i]);
+					}
+				}
+			}
+
+			class UpdatingObject extends ThreeComplexObject {
+				constructor(update, ...meshes) {
+					super();
+					this.updateFunc = update;
+					this.meshes = meshes;
+					for (let i = 0; i < meshes.length; i++) {
+						this.add(meshes[i]);
+					}
+				}
+				update(tick) {
+					super.update(tick);
+					if (this.updateFunc) {
+						this.updateFunc(tick, this);
+					}
+				}
+			}
+
+
+			class ThreeDemo {
+				constructor() {
+				}
+
+				start() {
+					this.tick = 0;
+					this.initScene();
+					this.initCamara();
+					this.initDOM();
+					this.populateScene();
+					this.animate();
+				}
+
+				initScene() {
+					this.scene = new THREE.Scene();
+					this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+					this.renderer = new THREE.WebGLRenderer();
+					this.renderer.setSize(window.innerWidth, window.innerHeight);
+					this.renderer.shadowMap.enabled = true;
+					this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+					this.renderer.gammaInput = true;
+					this.renderer.gammaOutput = true;
+					window.addEventListener('resize', function () {
+
+						camera.aspect = window.innerWidth / window.innerHeight;
+						camera.updateProjectionMatrix();
+
+						renderer.setSize(window.innerWidth, window.innerHeight);
+
+					}, false);
+				}
+
+				initDOM() {
+					document.body.appendChild(this.renderer.domElement);
+				}
+
+				populateScene() {
+					const light = new THREE.AmbientLight(0x404040); // soft white light
+					this.scene.add(light);
+					var directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+					this.scene.add(directionalLight);
+
+					var lowest = new THREE.MeshPhongMaterial({color: 0x00ff00, transparent: true, opacity: 0.3});
+					var middle = new THREE.MeshPhongMaterial({color: 0x0000ff, transparent: true, opacity: 0.3});
+					var higher = new THREE.MeshPhongMaterial({color: 0xff0000, transparent: true, opacity: 0.3});
+					var white = new THREE.MeshPhongMaterial({color: 0xffffff, transparent: true, opacity: 0.3});
+
+
+					this.root = new ThreeComplexObject();
+
+
+					this.root
+							.add(
+									new UpdatingObject(
+											(tick, base) =>
+										base.rotateTo(0, tick / 240, 0),
+											new THREE.Mesh(new THREE.CylinderGeometry(5, 5, .1, 32), lowest))
+									.moveTo(0, 0, 0)
+									.add(
+											new SimpleObject(new THREE.Mesh(new THREE.CylinderGeometry(.1, .1, 1, 32), white))
+											.moveTo(4, .5, 0),
+											new UpdatingObject(
+													(tick, base) => base.rotateTo(0, tick / 30, 0),
+													new THREE.Mesh(new THREE.CylinderGeometry(2, 2, .1, 32), middle))
+											.moveTo(4, 1, 0)
+											.add(
+													new SimpleObject(new THREE.Mesh(new THREE.CylinderGeometry(.1, .1, 1, 32), white))
+													.moveTo(1.5, .5, 0)
+													)
+
+											),
+									new UpdatingObject(
+											(tick, base) => base.rotateTo(0, tick / 480, 0),
+											new THREE.Mesh(new THREE.CylinderGeometry(7, 7, .1, 32), lowest))
+									.moveTo(0, -0.1, 0)
+									.add(
+											new SimpleObject(new THREE.Mesh(new THREE.CylinderGeometry(.1, .1, 1, 32), white))
+											.moveTo(6, 0.5, 0),
+											new UpdatingObject(
+													(tick, base) => base.rotateTo(0, tick / 30, 0),
+													new THREE.Mesh(new THREE.CylinderGeometry(2, 2, .1, 32), middle))
+											.moveTo(6, 1, 0)
+											.add(
+													new SimpleObject(new THREE.Mesh(new THREE.CylinderGeometry(.1, .1, 1, 32), white))
+													.moveTo(1.5, .5, 0)
+													)
+											)
+
+
+									);
+
+					this.scene.add(this.root.group);
+					console.log(this.root);
+				}
+
+				initCamara() {
+					this.camera.position.set(9, 4, 0);
+					this.camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+				}
+
+				updateCamara(tick) {
+				}
+
+				updateCubes(tick) {
+					this.root.update(tick);
+				}
+
+				update(tick) {
+					this.updateCamara(tick);
+					this.updateCubes(tick);
+				}
+
+				render() {
+					this.renderer.render(this.scene, this.camera);
+				}
+
+				animate() {
+					this.update(this.tick++);
+					this.render();
+					requestAnimationFrame(() => this.animate());
+				}
+			}
+
+			const demo = new ThreeDemo();
+			demo.start();
+
+
+
+		</script>
+	</body>
+</html>

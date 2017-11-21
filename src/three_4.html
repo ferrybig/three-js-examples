@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8>
+		<title>My first three.js app</title>
+		<style>
+			body { margin: 0; font-size: 0;}
+			canvas { width: 100%; height: 100%; }
+		</style>
+	</head>
+	<body>
+		<script src="three.js"></script>
+		<script>
+			class PsuedoRandom {
+				constructor(seed) {
+					this.m_w = 123456789;
+					this.m_z = 987654321;
+					this.mask = 0xffffffff;
+					if (seed !== undefined) {
+						this.seed(seed);
+					} else {
+						this.seed(Math.round(Math.random() * Number.MAX_SAFE_INTEGER));
+					}
+				}
+
+				seed(i) {
+					this.m_w = i;
+					this.m_z = 987654321;
+				}
+
+				// Returns number between 0 (inclusive) and 1.0 (exclusive),
+				// just like Math.random().
+				random()
+				{
+					this.m_z = (36969 * (this.m_z & 65535) + (this.m_z >> 16)) & this.mask;
+					this.m_w = (18000 * (this.m_w & 65535) + (this.m_w >> 16)) & this.mask;
+					var result = ((this.m_z << 16) + this.m_w) &this.mask;
+					result /= 4294967296;
+					return result + 0.5;
+				}
+			}
+			class Octave {
+				constructor(amplitude, offset, frequency) {
+					this.amplitude = amplitude;
+					this.offset = offset;
+					this.frequency = frequency;
+					console.log(amplitude, offset, frequency);
+				}
+				noise(point) {
+					return Math.sin((point + this.offset)/ this.frequency ) * this.amplitude;
+				}
+				getAmplitude() {
+					return this.amplitude;
+				}
+				
+			}
+			class NoiseGenerator {
+				constructor(seed) {
+					this.octaves = [];
+					const random = new PsuedoRandom(seed);
+					for (let i = 0; i < 2; i++) {
+						const arr =[]
+								this.octaves.push(arr);
+						for (let j = 0; j < 3; j++) {
+							arr.push(new Octave(random.random() * 5, random.random() * 5, random.random() * 5));
+						}
+					}
+				}
+				noise(...input) {
+					let output = 0;
+					let totalStrength = 0;
+					for(let i = 0; i< input.length; i++) {
+						for(let j = 0; j< this.octaves[i].length; j++) {
+							output += this.octaves[i][j].noise(input[i]);
+							totalStrength += this.octaves[i][j].getAmplitude();
+						}
+					}
+					return output / totalStrength;
+				}
+			}
+				
+			const noiseGenerator = new NoiseGenerator();
+
+
+			class Piece {
+
+				constructor(scene, ligth = false, pos, lights) {
+					this.scene = scene;
+
+					this.pieces = [];
+					this.group = new THREE.Group();
+					for (let i = -15; i < 15; i++) {
+						const material = new THREE.MeshPhongMaterial({color: new THREE.Color(0xaaffaa), dithering: true, shininess: 0});
+						const mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), material);
+						this.pieces.push(mesh);
+						mesh.position.z = i;
+						this.group.add( mesh );
+					}
+
+					this.scene.add( this.group );
+					
+
+					this.reset(pos, lights);
+				}
+				reset(pos) {
+					this.group.position.x = pos.x;
+					for (let i = 0; i < this.pieces.length; i++) {
+						this.pieces[i].position.y = noiseGenerator.noise(pos.realX, this.pieces[i].position.z);
+						this.pieces[i].material.color = new THREE.Color(Math.round(THREE.Math.mapLinear(this.pieces[i].position.y, -1, 1, 0, 0xff)) * 0x000100 + 0x880088);
+					}
+				}
+				updatePos() {
+					this.group.position.x -= 0.1;
+					for (let i = 0; i < this.pieces.length; i++) {
+						
+					}
+				}
+
+				shouldRemove() {
+					return this.group.position.x < -3;
+				}
+				getX() {
+					return this.group.position.x;
+				}
+			}
+			class ThreeDemo {
+				constructor() {
+					this.pieces = [];
+					this.realX = 0;
+				}
+
+				start() {
+					this.tick = 0;
+					this.initScene();
+					this.initCamara();
+					this.initDOM();
+					this.populateScene();
+					this.animate();
+				}
+
+				initScene() {
+					this.scene = new THREE.Scene();
+					this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+					this.renderer = new THREE.WebGLRenderer();
+					this.renderer.setSize(window.innerWidth, window.innerHeight);
+					this.renderer.shadowMap.enabled = true;
+					this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+					this.renderer.gammaInput = true;
+					this.renderer.gammaOutput = true;
+					window.addEventListener( 'resize', function () {
+
+						camera.aspect = window.innerWidth / window.innerHeight;
+						camera.updateProjectionMatrix();
+
+						renderer.setSize( window.innerWidth, window.innerHeight );
+
+					}, false );
+				}
+
+				initDOM() {
+					document.body.appendChild(this.renderer.domElement);
+				}
+
+				newPosition(x) {
+					return {
+						x,
+						realX: this.realX++,
+						y: 0,
+						z: 0,
+					};
+				}
+
+				populateScene() {
+					for (let i = -1; i < 40; i++) {
+						this.pieces.push(new Piece(this.scene, i === -2, this.newPosition(i)));
+					}
+					const light = new THREE.AmbientLight(0x404040); // soft white light
+					this.scene.add(light);
+					// White directional light at half intensity shining from the top.
+					var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.9 );
+					this.scene.add( directionalLight );
+
+				}
+
+				initCamara() {
+					this.camera.position.set(0, 2.5, 0);
+					this.camera.lookAt(new THREE.Vector3(5, 0, 0));
+
+				}
+
+				updateCamara(tick) {
+				}
+
+				updateCubes(tick) {
+					for (let i = 0; i < this.pieces.length; i++) {
+						this.pieces[i].updatePos();
+						if (this.pieces[i].shouldRemove()) {
+							this.pieces[i].reset(this.newPosition(this.pieces[i].getX() + this.pieces.length));
+							//this.pieces.push(new Piece(this.scene, false, this.pieces[i].getX() + this.pieces.length));
+						}
+					}
+				}
+
+				update(tick) {
+					this.updateCamara(tick);
+					this.updateCubes(tick);
+				}
+
+				render() {
+					this.renderer.render(this.scene, this.camera);
+				}
+
+				animate() {
+					this.update(this.tick++);
+					this.render();
+					requestAnimationFrame(() => this.animate());
+				}
+			}
+
+			const demo = new ThreeDemo();
+			demo.start();
+
+
+
+		</script>
+	</body>
+</html>
