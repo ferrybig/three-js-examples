@@ -451,12 +451,13 @@ class ThreeDemo {
 		ctx.textAlign = "center";
 		ctx.fillStyle = 'white';
 		ctx.textBaseline="middle";
+		ctx.clearRect(0,0,64,64);
 		ctx.fillText(this.score, 32, 32);
 	}
 
 	incrementScore() {
 		this.score++;
-		updateScore();
+		this.updateScore();
 	}
 
 	makeBlock() {
@@ -571,6 +572,8 @@ class ThreeDemo {
 					rowSet[this.field[i].x][this.field[i].z] = this.field[i];
 				}
 				replaced++;
+				this.incrementScore();
+				console.log('Score improved');
 			}
 		}
 	}
