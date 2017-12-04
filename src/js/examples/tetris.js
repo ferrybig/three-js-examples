@@ -1,12 +1,11 @@
-/* global THREE, Infinity */
-
 'use strict';
 
-import { inputBindingKeyAction, inputBindingKey } from './controller.js';
-import Gameloop from './gameloop.js';
-import keyHandler from './keyHandler.js';
+import * as THREE from 'three';
+import { inputBindingKeyAction, inputBindingKey } from '../controller.js';
+import Gameloop from '../gameloop.js';
+import keyHandler from '../keyHandler.js';
 
-
+console.log('load');
 
 
 const controls = {
@@ -462,7 +461,7 @@ class ThreeDemo {
 
 	makeBlock() {
 		if (!this.texture) {
-			this.texture = new THREE.TextureLoader().load('crate.gif');
+			this.texture = new THREE.TextureLoader().load(require('assets/img/crate.gif'));
 		}
 		const material = new THREE.MeshPhongMaterial({
 			shininess: 30,

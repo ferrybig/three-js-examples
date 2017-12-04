@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title></title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+
+<ul>
+<% for (var file = 0; file < htmlWebpackPlugin.options.examples.length; file++) { %>
+<li>
+<a href="<%= htmlWebpackPlugin.options.examples[file].url %>">
+<%= htmlWebpackPlugin.options.examples[file].name %>
+</a>
+</li>
+<% } %>
+</ul>
+</body>
+</html>
