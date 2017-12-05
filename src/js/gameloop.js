@@ -17,7 +17,7 @@ class Gameloop {
 		}
 		this.pending = false;
 
-		var timeInMs = Date.now();
+		const timeInMs = Date.now();
 		if (this.lastFrameTime === undefined || timeInMs - this.lastFrameTime > 400) {
 			// Either missed to many frames, or we are first starting
 			// Adjust the frames by a few MS to prevent clock skew from messing with the time
@@ -56,7 +56,7 @@ class Gameloop {
 	 */
 
 	scheduleTick() {
-		var requestAnimFrame =
+		const requestAnimFrame =
 			window.requestAnimationFrame ||
 			window.webkitRequestAnimationFrame ||
 			window.mozRequestAnimationFrame ||
@@ -118,7 +118,7 @@ class Gameloop {
 				return this.drawTasks[i];
 			}
 		}
-		let enabled = true;
+		const enabled = true;
 		const task = this.makeTaskGroup();
 		this.drawTasks.push(task);
 		return task;

@@ -3,7 +3,6 @@
 import * as THREE from 'three';
 import Gameloop from '../gameloop.js';
 
-
 class ThreeDemo {
 	constructor() {
 		this.initVariables();
@@ -31,15 +30,15 @@ class ThreeDemo {
 		this.renderer.gammaInput = true;
 		this.renderer.gammaOutput = true;
 		window.addEventListener(
-				'resize',
-				() => {
-			this.camera.aspect = window.innerWidth / window.innerHeight;
-			this.camera.updateProjectionMatrix();
+			'resize',
+			() => {
+				this.camera.aspect = window.innerWidth / window.innerHeight;
+				this.camera.updateProjectionMatrix();
 
-			this.renderer.setSize(window.innerWidth, window.innerHeight);
-		},
-				false
-				);
+				this.renderer.setSize(window.innerWidth, window.innerHeight);
+			},
+			false
+		);
 	}
 
 	initDOM() {
@@ -60,63 +59,55 @@ class ThreeDemo {
 		const singleDraw = true;
 
 		if (!singleDraw) {
-
-
-			var material = new THREE.MeshBasicMaterial({
+			const material = new THREE.MeshBasicMaterial({
 				color: 0xff00ff
 			});
 
 			for (var i = 0; i < 5000; i++) {
-
 				var boxGeometry = new THREE.BoxGeometry(10, 10, 10);
 
 				var x = Math.random() * 500 - 250;
 				var y = Math.random() * 500 - 250;
 				var z = Math.random() * 500 - 250;
 
-				var cube = new THREE.Mesh(boxGeometry, material);
+				const cube = new THREE.Mesh(boxGeometry, material);
 				cube.position.set(x, y, z);
 
 				this.scene.add(cube);
 			}
-
 		} else {
-
-
-			var mergedGeometry1 = new THREE.Geometry();
-			var mergedGeometry2 = new THREE.Geometry();
-			var mergedGeometry3 = new THREE.Geometry();
-			var mergedGeometry4 = new THREE.Geometry();
+			const mergedGeometry1 = new THREE.Geometry();
+			const mergedGeometry2 = new THREE.Geometry();
+			const mergedGeometry3 = new THREE.Geometry();
+			const mergedGeometry4 = new THREE.Geometry();
 
 			var boxGeometry = new THREE.BoxGeometry(8, 8, 8);
-			var map = new THREE.TextureLoader().load(require('assets/img/crate.gif'));
+			const map = new THREE.TextureLoader().load(require('assets/img/crate.gif'));
 
-			var material1 = new THREE.MeshBasicMaterial({
+			const material1 = new THREE.MeshBasicMaterial({
 				color: 0xff0000,
 				map
 			});
-			var material2 = new THREE.MeshBasicMaterial({
+			const material2 = new THREE.MeshBasicMaterial({
 				color: 0xffff00,
 				map
 			});
-			var material3 = new THREE.MeshBasicMaterial({
-				color: 0xAAAAAA,
+			const material3 = new THREE.MeshBasicMaterial({
+				color: 0xaaaaaa,
 				map
 			});
-			var material4 = new THREE.MeshBasicMaterial({
-				color: 0xAA00AA,
+			const material4 = new THREE.MeshBasicMaterial({
+				color: 0xaa00aa,
 				map
 			});
-		
 
 			for (var i = 0; i < 90000; i++) {
-
 				var x = Math.random() * 500 - 250;
 				var y = Math.random() * 500 - 250;
 				var z = Math.random() * 500 - 250;
-				var rx = Math.random() * Math.PI * 2;
-				var ry = Math.random() * Math.PI * 2;
-				var rz = Math.random() * Math.PI * 2;
+				const rx = Math.random() * Math.PI * 2;
+				const ry = Math.random() * Math.PI * 2;
+				const rz = Math.random() * Math.PI * 2;
 
 				boxGeometry.rotateX(rx);
 				boxGeometry.rotateY(ry);
@@ -124,19 +115,18 @@ class ThreeDemo {
 				boxGeometry.translate(x, y, z);
 
 				switch (i % 4) {
-				case 0: 
-					mergedGeometry1.merge(boxGeometry);
-					break;
-				case 1: 
-					mergedGeometry2.merge(boxGeometry);
-					break;
-				case 2: 
-					mergedGeometry3.merge(boxGeometry);
-					break;
-				case 3: 
-					mergedGeometry4.merge(boxGeometry);
-					break;
-
+					case 0:
+						mergedGeometry1.merge(boxGeometry);
+						break;
+					case 1:
+						mergedGeometry2.merge(boxGeometry);
+						break;
+					case 2:
+						mergedGeometry3.merge(boxGeometry);
+						break;
+					case 3:
+						mergedGeometry4.merge(boxGeometry);
+						break;
 				}
 
 				boxGeometry.translate(-x, -y, -z);
@@ -145,25 +135,26 @@ class ThreeDemo {
 				boxGeometry.rotateX(-rx);
 			}
 
-			var cubes1 = new THREE.Mesh(mergedGeometry1, material1);
+			const cubes1 = new THREE.Mesh(mergedGeometry1, material1);
 			this.scene.add(cubes1);
-			var cubes2 = new THREE.Mesh(mergedGeometry2, material2);
+			const cubes2 = new THREE.Mesh(mergedGeometry2, material2);
 			this.scene.add(cubes2);
-			var cubes3 = new THREE.Mesh(mergedGeometry3, material3);
+			const cubes3 = new THREE.Mesh(mergedGeometry3, material3);
 			this.scene.add(cubes3);
-			var cubes4 = new THREE.Mesh(mergedGeometry4, material4);
+			const cubes4 = new THREE.Mesh(mergedGeometry4, material4);
 			this.scene.add(cubes4);
 		}
 		return;
-		navigator.mediaDevices.getUserMedia({audio: false, video: true})
-				.then(function (stream) {
-					/* use the stream */
-					console.log(stream);
-				})
-				.catch(function (err) {
-					/* handle the error */
-					console.log(err);
-				});
+		navigator.mediaDevices
+			.getUserMedia({ audio: false, video: true })
+			.then(stream => {
+				/* Use the stream */
+				console.log(stream);
+			})
+			.catch(err => {
+				/* Handle the error */
+				console.log(err);
+			});
 	}
 
 	initCamara() {

@@ -5,61 +5,64 @@ import Gameloop from '../gameloop.js';
 import keyHandler from '../keyHandler.js';
 
 export default class Demo {
-
 	start() {
-		var axis = Controller.inputBindingSmooth(
-				Controller.inputBindingSummed(
-						Controller.inputBindingKey(keyHandler, 65, 68),
-						Controller.inputBindingKey(keyHandler, 37, 39),
-						)
-				, 10, 0.01);
-		var axis2 = Controller.inputBindingSmooth(
-				Controller.inputBindingSummed(
-						Controller.inputBindingKey(keyHandler, 87, 83),
-						Controller.inputBindingKey(keyHandler, 38, 40),
-						)
-				, 10, 0.01);
-		var action = Controller.inputBindingKeyAction(keyHandler, 0, 32);
-		var dual = Controller.dualAxisControllerNormalized(axis, axis2);
+		const axis = Controller.inputBindingSmooth(
+			Controller.inputBindingSummed(
+				Controller.inputBindingKey(keyHandler, 65, 68),
+				Controller.inputBindingKey(keyHandler, 37, 39)
+			),
+			10,
+			0.01
+		);
+		const axis2 = Controller.inputBindingSmooth(
+			Controller.inputBindingSummed(
+				Controller.inputBindingKey(keyHandler, 87, 83),
+				Controller.inputBindingKey(keyHandler, 38, 40)
+			),
+			10,
+			0.01
+		);
+		const action = Controller.inputBindingKeyAction(keyHandler, 0, 32);
+		const dual = Controller.dualAxisControllerNormalized(axis, axis2);
 
-		var elm = document.createElement('div');
+		const elm = document.createElement('div');
 		document.body.appendChild(elm);
 
 		function showAxis(name, func) {
-			let child = document.createElement('pre');
+			const child = document.createElement('pre');
 			elm.appendChild(child);
-			return function () {
-				child.innerText = name + ": " + JSON.stringify(func(), null, 2);
+			return function() {
+				child.innerText = name + ': ' + JSON.stringify(func(), null, 2);
 			};
 		}
 		function showAction(name, func) {
-			let child = document.createElement('pre');
+			const child = document.createElement('pre');
 			elm.appendChild(child);
 			child.style.background = '#aaaaaa';
 			child.style.width = '20px';
 			child.style.height = '20px';
-			return function () {
+			return function() {
 				child.style.background = func() ? '#ff0000' : '#aaaaaa';
 			};
 		}
-		var test = document.createElement('div');
+		const test = document.createElement('div');
 		elm.appendChild(test);
-		test.style = 'background-color: red; width: 10px; height: 10px; position: absolute; top: 0px; left: 0px;'
+		test.style = 'background-color: red; width: 10px; height: 10px; position: absolute; top: 0px; left: 0px;';
 
-		var display = [
+		const display = [
 			showAxis('up/down', axis.getValue),
 			showAxis('left/rigth', axis2.getValue),
 			showAxis('all', dual.getValue),
 			showAxis('action', action.getValue),
 			showAction('action', action.getValue),
-			function () {
-				var value = dual.getValue();
+			function() {
+				const value = dual.getValue();
 				test.style.top = parseInt(test.style.top) + value.y * -10 + 'px';
 				test.style.left = parseInt(test.style.left) + value.x * -10 + 'px';
 			}
 		];
 
-		//import Gameloop from './gameloop.js';
+		// Import Gameloop from './gameloop.js';
 
 		const loop = new Gameloop();
 
@@ -69,7 +72,7 @@ export default class Demo {
 			keyHandler.tick();
 		});
 		loop.addDrawTask('draw', () => {
-			for (var i = 0; i < display.length; i++) {
+			for (let i = 0; i < display.length; i++) {
 				display[i]();
 			}
 		});

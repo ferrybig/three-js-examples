@@ -1,6 +1,8 @@
 'use strict';
 function between(input, min, max) {
-	if (input > max) return max;
+	if (input > max) {
+		return max;
+	}
 	if (input < min) {
 		return min;
 	}
@@ -77,7 +79,7 @@ export function inputBindingCombined(...inputBindings) {
 		return inputBindings[0];
 	}
 	let lastValue = 0;
-	let lastValues = [];
+	const lastValues = [];
 	for (let i = 0; i < inputBindings.length; i++) {
 		lastValues.push(0);
 	}
@@ -89,7 +91,7 @@ export function inputBindingCombined(...inputBindings) {
 		},
 		getValue() {
 			for (let i = 0; i < inputBindings.length; i++) {
-				let value = inputBindings[i].getValue();
+				const value = inputBindings[i].getValue();
 				if (value !== lastValues[i]) {
 					lastValue = value;
 					return value;
@@ -137,7 +139,7 @@ export function inputBindingSmooth(inputBinding, smoothness, minChange = 0) {
 	return {
 		tick() {
 			inputBinding.tick();
-			var previeus = lastValue;
+			const previeus = lastValue;
 			lastValue = (lastValue * smoothness + inputBinding.getValue()) / (smoothness + 1);
 			if (minChange !== 0 && Math.abs(lastValue - previeus) < minChange) {
 				lastValue = inputBinding.getValue();
@@ -157,7 +159,7 @@ export function inputBindingDeadzone(inputBinding, smoothness, minChange = 0) {
 	return {
 		tick() {
 			inputBinding.tick();
-			var previeus = lastValue;
+			const previeus = lastValue;
 			lastValue = (lastValue * smoothness + inputBinding.getValue()) / (smoothness + 1);
 			if (minChange !== 0 && Math.abs(lastValue - previeus) < minChange) {
 				lastValue = inputBinding.getValue();
@@ -186,8 +188,8 @@ export function dualAxisControllerNormalized(inputBindingX, inputBindingY) {
 			const total = ret.x * ret.x + ret.y * ret.y;
 			if (total > 1) {
 				const squared = Math.sqrt(total);
-				ret.x = ret.x / squared;
-				ret.y = ret.y / squared;
+				ret.x /= squared;
+				ret.y /= squared;
 			}
 			return ret;
 		},
@@ -231,9 +233,9 @@ export function trippleAxisControllerNormalized(inputBindingX, inputBindingY, in
 			const total = ret.x * ret.x + ret.y * ret.y + ret.z * ret.z;
 			if (total > 1) {
 				const squared = Math.sqrt(total);
-				ret.x = ret.x / squared;
-				ret.y = ret.y / squared;
-				ret.z = ret.z / squared;
+				ret.x /= squared;
+				ret.y /= squared;
+				ret.z /= squared;
 			}
 			return ret;
 		},

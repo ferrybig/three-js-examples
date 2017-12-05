@@ -3,7 +3,6 @@
 import * as THREE from 'three';
 import Gameloop from '../gameloop.js';
 
-
 class ThreeDemo {
 	constructor() {
 		this.initVariables();
@@ -31,15 +30,15 @@ class ThreeDemo {
 		this.renderer.gammaInput = true;
 		this.renderer.gammaOutput = true;
 		window.addEventListener(
-				'resize',
-				() => {
-			this.camera.aspect = window.innerWidth / window.innerHeight;
-			this.camera.updateProjectionMatrix();
+			'resize',
+			() => {
+				this.camera.aspect = window.innerWidth / window.innerHeight;
+				this.camera.updateProjectionMatrix();
 
-			this.renderer.setSize(window.innerWidth, window.innerHeight);
-		},
-				false
-				);
+				this.renderer.setSize(window.innerWidth, window.innerHeight);
+			},
+			false
+		);
 	}
 
 	initDOM() {
@@ -56,19 +55,15 @@ class ThreeDemo {
 		this.scene.add(light);
 		const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5, 200);
 		this.scene.add(directionalLight);
-
-		
 	}
 
-	initCamara() {
-	}
+	initCamara() {}
 
 	update() {
 		this.tick++;
 
 		this.camera.position.set(Math.sin(0 / 240) * 6.4, 0, Math.cos(0 / 240) * 6.4);
 		this.camera.lookAt(new THREE.Vector3(0, 0, 0));
-
 	}
 
 	animate() {

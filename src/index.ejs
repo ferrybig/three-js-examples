@@ -3,6 +3,9 @@
 <head>
   <meta charset="utf-8">
   <title><%= htmlWebpackPlugin.options.title || 'Webpack App'%></title>
+  <style>
+    canvas:last-child { position:absolute; top:0; left:0 }
+  </style>
 
   <% if (htmlWebpackPlugin.files.favicon) { %>
   <link rel="shortcut icon" href="<%= htmlWebpackPlugin.files.favicon%>">

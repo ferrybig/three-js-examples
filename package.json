@@ -19,6 +19,11 @@
     "test": "test"
   },
   "devDependencies": {
+    "babel-loader": "^7.1.2",
+    "babel-minify-webpack-plugin": "^0.2.0",
+    "babel-plugin-minify-dead-code-elimination": "^0.2.0",
+    "babel-preset-minify": "^0.2.0",
+    "extract-text-webpack-plugin": "^3.0.2",
     "file-loader": "^1.1.5",
     "html-webpack-plugin": "^2.30.1",
     "image-webpack-loader": "^3.4.2",
@@ -26,7 +31,9 @@
     "webpack-dev-server": "^2.9.5"
   },
   "scripts": {
-    "dev": "webpack-dev-server --progress --colors --hot --content-base dist/ --open --config ./webpack.config.js --inline --watch"
+    "dev": "webpack-dev-server --progress --colors --hot --content-base dist/ --open --config ./webpack.config.js --inline --watch",
+    "devBuild": "webpack --config ./webpack.config.js --progress",
+    "prodBuild": "webpack --config ./webpack.config.js --progress"
   },
   "repository": {
     "type": "git",

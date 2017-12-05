@@ -7,7 +7,6 @@ import keyHandler from '../keyHandler.js';
 
 console.log('load');
 
-
 const controls = {
 	cameraLeftRight: inputBindingKeyAction(keyHandler, 37, 39), // < >
 	rotateBlockX: inputBindingKeyAction(keyHandler, 81, 69), // Q E
@@ -426,31 +425,31 @@ class ThreeDemo {
 		this.nextBoard.position.set(-6, 5, 0);
 		this.nextBoard.rotation.y = 0.4;
 		this.scene.add(this.nextBoard);
-		var plane = new THREE.PlaneGeometry(2, 2, 1);
+		const plane = new THREE.PlaneGeometry(2, 2, 1);
 
-		var planeMat = new THREE.MeshBasicMaterial({
+		const planeMat = new THREE.MeshBasicMaterial({
 			map: this.textCanvasTexture,
 			color: 0xffffff,
 			transparent: true
 		});
 
 		this.scoreMesh = new THREE.Mesh(plane, planeMat);
-		//mesh.scale.set(0.2, 0.2, 0.2);
+		// Mesh.scale.set(0.2, 0.2, 0.2);
 		this.scene.add(this.scoreMesh);
-		this.scoreMesh.position.set(6,10,0);
+		this.scoreMesh.position.set(6, 10, 0);
 		this.scoreMesh.lookAt(this.camera.position);
 	}
-	
+
 	updateScore() {
 		this.textCanvasTexture.needsUpdate = true;
-		var ctx = this.textCanvas.getContext('2d');
+		const ctx = this.textCanvas.getContext('2d');
 		const size = 48;
-		var fontStr = (size + 'px ') + ('monospace');
+		const fontStr = size + 'px ' + 'monospace';
 		ctx.font = fontStr;
-		ctx.textAlign = "center";
+		ctx.textAlign = 'center';
 		ctx.fillStyle = 'white';
-		ctx.textBaseline="middle";
-		ctx.clearRect(0,0,64,64);
+		ctx.textBaseline = 'middle';
+		ctx.clearRect(0, 0, 64, 64);
 		ctx.fillText(this.score, 32, 32);
 	}
 

@@ -1,9 +1,9 @@
 'use strict';
-var keys = [];
-var keysToDisable = [];
+const keys = [];
+const keysToDisable = [];
 document.addEventListener(
 	'keydown',
-	function(event) {
+	event => {
 		keys[event.keyCode] = true;
 		delete keysToDisable[event.keyCode];
 	},
@@ -11,7 +11,7 @@ document.addEventListener(
 );
 document.addEventListener(
 	'keyup',
-	function(event) {
+	event => {
 		keysToDisable[event.keyCode] = true;
 	},
 	false
@@ -22,7 +22,7 @@ const keyHandler = {
 		return keys[key];
 	},
 	tick() {
-		for (var code in keysToDisable) {
+		for (const code in keysToDisable) {
 			delete keys[code];
 		}
 	}
