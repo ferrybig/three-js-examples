@@ -48,7 +48,7 @@ class Piece {
 		return this.group.position.x;
 	}
 }
-export class ThreeDemo {
+export default class ThreeDemo {
 	constructor() {
 		this.pieces = [];
 		this.realX = 0;
