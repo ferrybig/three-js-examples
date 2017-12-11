@@ -94,21 +94,21 @@ module.exports = {
 					},
 				],
 			},
-			{
-				test: /\.js/,
-				exclude: /(node_modules|bower_components)/,
-				use: [
-					{
-						loader: 'babel-loader',
-						options: {
-							
-							presets: [[require("babel-preset-minify"), {mangle: {
-								topLevel: true
-							},}]],
-						},
-					},
-				],
-			},
+//			{
+//				test: /\.js/,
+//				exclude: /(node_modules|bower_components)/,
+//				use: [
+//					{
+//						loader: 'babel-loader',
+//						options: {
+//
+//							presets: [[require("babel-preset-minify"), {mangle: {
+//								topLevel: true
+//							},}]],
+//						},
+//					},
+//				],
+//			},
 		],
 	}
 };
