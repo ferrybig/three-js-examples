@@ -25,13 +25,13 @@ fs.readdirSync('./src/js/examples').forEach(file => {
 	});
 });
 htmlPlugins.push(new HtmlWebpackPlugin({
-		inject: false,
-		chunks: [],
-		filename: 'index.html',
-		template: 'src/listing.ejs',
-		title: 'Three JS examples',
-		examples: files,
-	}));
+	inject: false,
+	chunks: [],
+	filename: 'index.html',
+	template: 'src/listing.ejs',
+	title: 'Three JS examples',
+	examples: files,
+}));
 
 module.exports = {
 	devtool: 'eval-source-map',
@@ -62,7 +62,7 @@ module.exports = {
 				return module.context && module.context.includes("node_modules") && !module.context.includes("three");
 			}}),
 		...htmlPlugins,
-		//new MinifyPlugin({}, {}),
+				//new MinifyPlugin({}, {}),
 	],
 	module: {
 		rules: [
@@ -94,6 +94,13 @@ module.exports = {
 					},
 				],
 			},
+
+			{
+				test: /\.worker\.js$/,
+				use: {
+					loader: 'worker-loader'
+				}
+			}
 //			{
 //				test: /\.js/,
 //				exclude: /(node_modules|bower_components)/,
